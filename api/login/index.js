@@ -18,12 +18,20 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 module.exports = async function (context, req) {
     try {
+        // Initialize response object if not already set
+        if (!context.res) {
+            context.res = {};
+        }
+        
+        // Initialize headers if not already set
+        if (!context.res.headers) {
+            context.res.headers = {};
+        }
+
         // Enable CORS
-        context.res.headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
-        };
+        context.res.headers['Access-Control-Allow-Origin'] = '*';
+        context.res.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
+        context.res.headers['Access-Control-Allow-Headers'] = 'Content-Type';
 
         // Handle preflight requests
         if (req.method === 'OPTIONS') {
@@ -66,6 +74,11 @@ module.exports = async function (context, req) {
 
     } catch (error) {
         context.log.error('Login function error:', error);
+        
+        // Ensure response object exists for error handling
+        if (!context.res) {
+            context.res = {};
+        }
         
         context.res.status = 500;
         context.res.body = {
