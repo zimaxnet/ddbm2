@@ -5,8 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["POST"],
-      "route": "reset-password"
+      "methods": ["POST"]
     },
     {
       "type": "http",
