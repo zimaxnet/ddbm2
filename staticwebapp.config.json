@@ -5,6 +5,10 @@
       "allowedRoles": ["authenticated"]
     },
     {
+      "route": "/api/simple",
+      "allowedRoles": ["anonymous"]
+    },
+    {
       "route": "/api/login",
       "allowedRoles": ["anonymous"]
     },
