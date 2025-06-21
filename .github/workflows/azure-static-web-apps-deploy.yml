@@ -27,7 +27,6 @@ jobs:
           action: "upload"
           app_location: "/"
           api_location: "" # API is deployed separately now
-          output_location: "."
           skip_app_build: true
           skip_api_build: true # Skip building API here
 
