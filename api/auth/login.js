@@ -20,6 +20,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 app.http('login', {
     methods: ['POST'],
     authLevel: 'anonymous',
+    route: 'auth/login',
     handler: async (request, context) => {
         try {
             // Enable CORS
