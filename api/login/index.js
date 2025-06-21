@@ -29,9 +29,11 @@ module.exports = async function (context, req) {
         }
 
         // Enable CORS
-        context.res.headers['Access-Control-Allow-Origin'] = '*';
-        context.res.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
-        context.res.headers['Access-Control-Allow-Headers'] = 'Content-Type';
+        context.res.headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        };
 
         // Handle preflight requests
         if (req.method === 'OPTIONS') {
