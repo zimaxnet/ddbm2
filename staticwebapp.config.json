@@ -5,11 +5,11 @@
       "allowedRoles": ["authenticated"]
     },
     {
-      "route": "/api/auth/login",
+      "route": "/api/login",
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/api/auth/reset-password",
+      "route": "/api/reset-password",
       "allowedRoles": ["anonymous"]
     },
     {
