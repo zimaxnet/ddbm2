@@ -19,10 +19,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 module.exports = async function (context, req) {
     try {
         // Enable CORS
-        context.res.headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
+        context.res = {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            }
         };
 
         // Handle preflight requests
