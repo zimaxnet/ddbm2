@@ -34,7 +34,7 @@
           "clientSecretSettingName": "AZURE_CLIENT_SECRET"
         },
         "validation": {
-          "allowedAudiences": ["api://your-client-id"]
+          "allowedAudiences": ["api://a358c3a5-b8d9-4283-ae00-f13c28246485"]
         }
       }
     }
