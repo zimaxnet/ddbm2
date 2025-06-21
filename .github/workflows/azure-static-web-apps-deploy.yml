@@ -23,4 +23,4 @@ jobs:
           action: "upload"
           app_location: "/"
           api_location: "api"
-          app_build_command: 'echo "No build required"' 
+          app_build_command: "npm run build" 
