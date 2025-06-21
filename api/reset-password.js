@@ -42,7 +42,7 @@ async function getGraphClient() {
 app.http('reset-password', {
     methods: ['POST'],
     authLevel: 'anonymous',
-    route: 'auth/reset-password',
+    route: 'api/auth/reset-password',
     handler: async (request, context) => {
         try {
             // Enable CORS
