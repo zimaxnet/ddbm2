@@ -5,6 +5,26 @@
       "allowedRoles": ["authenticated"]
     },
     {
+      "route": "/api/login",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/reset-password",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/test",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/test-v4",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
       "route": "/",
       "allowedRoles": ["anonymous"]
     }
