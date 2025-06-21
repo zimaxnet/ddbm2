@@ -415,7 +415,7 @@
 
             try {
                 // Call our Azure Function API for authentication
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -466,7 +466,7 @@
             try {
                 showStatus('Sending password reset email...', 'info');
                 
-                const response = await fetch('/api/auth/reset-password', {
+                const response = await fetch('/api/reset-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
