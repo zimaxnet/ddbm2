@@ -409,9 +409,11 @@
         
         // Handle form submission
         async function handleLogin(email, password) {
+            const loginButton = document.getElementById('loginButton');
+            loginButton.disabled = true;
+            showStatus('Signing in...', 'info');
+
             try {
-                showStatus('Signing in...', 'info');
-                
                 // Call our Azure Function API for authentication
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
@@ -423,23 +425,32 @@
                         password: password
                     })
                 });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    showStatus('Sign in successful! Redirecting...', 'success');
-                    
-                    // Redirect to the authenticated URL or dashboard
-                    setTimeout(() => {
-                        window.location.href = result.redirectUrl || '/dashboard';
-                    }, 1500);
+
+                // Check if the response is JSON before parsing
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.indexOf('application/json') !== -1) {
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        showStatus('Sign in successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = result.redirectUrl || '/dashboard';
+                        }, 1500);
+                    } else {
+                        // Handle JSON error response from API
+                        throw new Error(result.message || 'Authentication failed.');
+                    }
                 } else {
-                    throw new Error(result.message || 'Authentication failed');
+                    // Handle non-JSON response (likely an HTML error page)
+                    const textResponse = await response.text();
+                    console.error('Non-JSON response received:', textResponse);
+                    throw new Error('The server returned an unexpected response. Please check the console for details.');
                 }
                 
             } catch (error) {
                 showStatus(`Sign in failed: ${error.message}`, 'error');
-                console.error('Login error:', error);
+                console.error('Login error details:', error);
+            } finally {
+                loginButton.disabled = false;
             }
         }
         
