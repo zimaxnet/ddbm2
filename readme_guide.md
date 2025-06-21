@@ -5,31 +5,9 @@ A modern data platform with Azure AD External ID (CIAM) authentication, built on
 ## 🏗️ Architecture
 
 - **Frontend**: Static HTML/CSS/JavaScript hosted on Azure Static Web Apps
-- **Authentication**: Azure AD External ID (CIAM) with email/password and Microsoft SSO
+- **Authentication**: Azure AD External ID (CIAM) with email/password
 - **API**: Azure Functions (Node.js) for custom authentication logic
-- **Secrets Management**: Azure Key Vault (enterprise setups)
 - **Domain**: ddbm.us with custom SSL certificate
-
-## 📁 Project Structure
-
-```
-ddbm/
-├── index.html                 # Main login page
-├── dashboard/
-│   └── index.html            # Dashboard after login
-├── api/                      # Azure Functions
-│   ├── auth/
-│   │   ├── login.js         # Email/password authentication
-│   │   └── reset-password.js # Password reset functionality
-│   ├── package.json         # Function dependencies
-│   └── host.json           # Function app configuration
-├── scripts/                  # Deployment scripts
-│   ├── setup-keyvault.sh    # Key Vault setup (Linux/macOS)
-│   └── setup-keyvault.ps1   # Key Vault setup (Windows)
-├── staticwebapp.config.json # Static Web App routing & auth
-├── .github/workflows/       # GitHub Actions for deployment
-└── README.md               # This file
-```
 
 ## 🚀 Quick Start
 
@@ -103,36 +81,10 @@ az functionapp create \
   --functions-version 4 \
   --name ddbm-api-functions \
   --storage-account ddbmstorageaccount
-
-# Create Key Vault (optional, for enterprise setups)
-az keyvault create \
-  --name ddbm-keyvault \
-  --resource-group ddbm-rg \
-  --location "East US" \
-  --sku standard \
-  --enable-rbac-authorization true
-
-# Grant Function App access to Key Vault
-az functionapp identity assign \
-  --name ddbm-api-functions \
-  --resource-group ddbm-rg
-
-# Get the Function App's managed identity
-FUNCTION_APP_PRINCIPAL_ID=$(az functionapp identity show \
-  --name ddbm-api-functions \
-  --resource-group ddbm-rg \
-  --query principalId --output tsv)
-
-# Grant Key Vault access to Function App
-az keyvault set-policy \
-  --name ddbm-keyvault \
-  --object-id $FUNCTION_APP_PRINCIPAL_ID \
-  --secret-permissions get list
 ```
 
 ### 4. Configure Environment Variables
 
-#### Option A: Direct Configuration (Development)
 Set these in your Static Web App configuration:
 
 ```bash
@@ -146,52 +98,6 @@ az staticwebapp appsettings set \
     SERVICE_ACCOUNT_EMAIL="noreply@ddbm.us"
 ```
 
-#### Option B: Key Vault Integration (Enterprise)
-Use the automated setup scripts:
-
-**Linux/macOS:**
-```bash
-# Make script executable
-chmod +x scripts/setup-keyvault.sh
-
-# Run the setup script
-./scripts/setup-keyvault.sh
-```
-
-**Windows PowerShell:**
-```powershell
-# Run the setup script
-.\scripts\setup-keyvault.ps1
-```
-
-**Manual Setup:**
-```bash
-# Generate a strong JWT secret
-JWT_SECRET=$(openssl rand -base64 32)
-
-# Store secrets in Key Vault
-az keyvault secret set \
-  --vault-name "ddbm-keyvault" \
-  --name "jwt-secret-prod" \
-  --value "$JWT_SECRET"
-
-az keyvault secret set \
-  --vault-name "ddbm-keyvault" \
-  --name "azure-client-secret" \
-  --value "your-client-secret"
-
-# Configure Function App to use Key Vault references
-az functionapp config appsettings set \
-  --name ddbm-api-functions \
-  --resource-group ddbm-rg \
-  --settings \
-    AZURE_CLIENT_ID="your-client-id" \
-    AZURE_TENANT_ID="zimaxai.onmicrosoft.com" \
-    SERVICE_ACCOUNT_EMAIL="noreply@ddbm.us" \
-    JWT_SECRET="@Microsoft.KeyVault(SecretUri=https://ddbm-keyvault.vault.azure.net/secrets/jwt-secret-prod/)" \
-    AZURE_CLIENT_SECRET="@Microsoft.KeyVault(SecretUri=https://ddbm-keyvault.vault.azure.net/secrets/azure-client-secret/)"
-```
-
 ### 5. Custom Domain Setup
 
 1. Go to your Static Web App in Azure Portal
@@ -202,6 +108,24 @@ az functionapp config appsettings set \
    CNAME: www -> your-static-app.azurestaticapps.net
    CNAME: @ -> your-static-app.azurestaticapps.net
    ```
+
+## 📁 Project Structure
+
+```
+ddbm/
+├── index.html                 # Main login page
+├── dashboard/
+│   └── index.html            # Dashboard after login
+├── api/                      # Azure Functions
+│   ├── auth/
+│   │   ├── login.js         # Email/password authentication
+│   │   └── reset-password.js # Password reset functionality
+│   ├── package.json         # Function dependencies
+│   └── host.json           # Function app configuration
+├── staticwebapp.config.json # Static Web App routing & auth
+├── .github/workflows/       # GitHub Actions for deployment
+└── README.md               # This file
+```
 
 ## 🔐 Authentication Flow
 
@@ -275,60 +199,109 @@ Configures Azure Static Web Apps routing, authentication, and security headers.
 
 ## 🚦 Deployment
 
-The application is automatically deployed to Azure Static Web Apps via GitHub Actions when changes are pushed to the main branch.
+### Automatic Deployment
+1. Push code to main branch
+2. GitHub Actions automatically deploys to Azure Static Web Apps
+3. Functions are deployed as part of the Static Web App
 
 ### Manual Deployment
 ```bash
-# Deploy to Azure Static Web Apps
-az staticwebapp deploy \
-  --source . \
-  --name ddbm-static-app \
-  --resource-group ddbm-rg
+# Deploy Static Web App
+az staticwebapp deploy --name ddbm-static-app --source .
+
+# Deploy Functions separately if needed
+cd api
+func azure functionapp publish ddbm-api-functions
 ```
 
 ## 🔒 Security Features
 
-- HTTP-only cookies for session management
-- CORS protection
-- Content Security Policy headers
-- XSS protection
-- CSRF protection via SameSite cookies
-- Secure authentication with Azure AD External ID
-- Azure Key Vault integration for secret management (enterprise)
-- Managed identity for secure access to Key Vault
+- **HTTPS Only**: All traffic encrypted with TLS
+- **HTTP-Only Cookies**: JWT tokens stored securely
+- **CSP Headers**: Content Security Policy prevents XSS
+- **CORS Protection**: Restricted cross-origin requests
+- **Input Validation**: Email format and required field validation
+- **Rate Limiting**: Azure Functions built-in throttling
 
-## 🔐 Secret Management
+## 📊 Monitoring
 
-### Development Environment
-- Use environment variables or local.settings.json
-- Store secrets in Azure App Service Configuration
+### Azure Application Insights
+Monitor your application performance and errors:
 
-### Production Environment (Enterprise)
-- Use Azure Key Vault for all sensitive secrets
-- Leverage managed identity for secure access
-- Implement secret rotation policies
-- Monitor secret access with Azure Key Vault logs
+1. Enable Application Insights in your Function App
+2. View logs and metrics in Azure Portal
+3. Set up alerts for errors and performance issues
 
-### Key Vault Best Practices
-1. **Access Control**: Use RBAC instead of access policies
-2. **Secret Rotation**: Implement automated secret rotation
-3. **Monitoring**: Enable diagnostic logging
-4. **Backup**: Configure soft delete and backup
-5. **Network Security**: Use private endpoints for Key Vault
+### Log Queries
+```kusto
+// Function app errors
+traces
+| where severityLevel >= 3
+| order by timestamp desc
 
-### Automated Setup Scripts
-The project includes automated scripts for Key Vault setup:
+// Authentication attempts
+requests
+| where url contains "auth"
+| summarize count() by resultCode, bin(timestamp, 1h)
+```
 
-- **`scripts/setup-keyvault.sh`**: Bash script for Linux/macOS
-- **`scripts/setup-keyvault.ps1`**: PowerShell script for Windows
+## 🧪 Testing
 
-These scripts automate:
-- Key Vault creation with security best practices
-- Managed identity setup for Function App
-- Secret generation and storage
-- Function App configuration with Key Vault references
+### Local Testing
+```bash
+# Test authentication endpoint
+curl -X POST http://localhost:7071/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
 
-## 📝 License
+# Test password reset
+curl -X POST http://localhost:7071/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com"}'
+```
+
+### Production Testing
+```bash
+# Test production endpoints
+curl -X POST https://ddbm.us/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **CORS Errors**
+   - Check `staticwebapp.config.json` routing configuration
+   - Verify API endpoints are correctly configured
+
+2. **Authentication Failures**
+   - Verify Azure AD app registration settings
+   - Check client ID and secret in environment variables
+   - Ensure proper API permissions are granted
+
+3. **Email Not Sending**
+   - Verify Microsoft Graph API permissions
+   - Check service account email configuration
+   - Review Function App logs for errors
+
+4. **Custom Domain Issues**
+   - Verify DNS records are correctly configured
+   - Wait for DNS propagation (up to 48 hours)
+   - Check SSL certificate status in Azure Portal
+
+### Debug Mode
+Enable debug logging by setting `DEBUG=true` in your Function App settings.
+
+## 📚 Additional Resources
+
+- [Azure Static Web Apps Documentation](https://docs.microsoft.com/en-us/azure/static-web-apps/)
+- [Azure AD External ID Documentation](https://docs.microsoft.com/en-us/azure/active-directory-b2c/)
+- [Azure Functions Documentation](https://docs.microsoft.com/en-us/azure/azure-functions/)
+- [Microsoft Graph API Documentation](https://docs.microsoft.com/en-us/graph/)
+
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
@@ -337,9 +310,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests
 5. Submit a pull request
 
 ## 📞 Support
 
-For support and questions, please contact the DDBM team or create an issue in this repository.
+For support and questions:
+- Create an issue in this repository
+- Contact: support@ddbm.us
+- Documentation: https://docs.ddbm.us

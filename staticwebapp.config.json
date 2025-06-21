@@ -1,0 +1,65 @@
+{
+  "routes": [
+    {
+      "route": "/dashboard/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/auth/login",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/auth/reset-password",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/",
+      "allowedRoles": ["anonymous"]
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*", "/css/*", "/js/*", "/api/*"]
+  },
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/zimaxai.onmicrosoft.com/v2.0",
+          "clientIdSettingName": "AZURE_CLIENT_ID",
+          "clientSecretSettingName": "AZURE_CLIENT_SECRET"
+        },
+        "validation": {
+          "allowedAudiences": ["api://your-client-id"]
+        }
+      }
+    }
+  },
+  "platform": {
+    "apiRuntime": "node:18"
+  },
+  "responseOverrides": {
+    "401": {
+      "rewrite": "/",
+      "statusCode": 302
+    },
+    "403": {
+      "rewrite": "/",
+      "statusCode": 302
+    }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://login.microsoftonline.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com; frame-src https://login.microsoftonline.com;"
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  }
+} 

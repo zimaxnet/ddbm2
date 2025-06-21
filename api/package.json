@@ -1,0 +1,30 @@
+{
+  "name": "ddbm-api",
+  "version": "1.0.0",
+  "description": "DDBM Azure Functions API for authentication and data management",
+  "main": "index.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.6.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@azure/functions": "^4.0.0"
+  },
+  "keywords": [
+    "azure-functions",
+    "authentication",
+    "microsoft-graph",
+    "ddbm"
+  ],
+  "author": "DDBM Team",
+  "license": "MIT"
+} 
